@@ -1,0 +1,60 @@
+- hosts: all
+  gather_facts: yes
+  tasks:
+    - name: "make project dir"
+      file:
+        state: directory
+        path: "{{ base_path }}"
+        recurse: yes
+
+    - name: "copy src"
+      synchronize:
+        src: "{{ playbook_dir }}/.."
+        dest: "{{ base_path }}/src"
+        delete: yes
+        recursive: yes
+        rsync_opts: "{{ rsync_exclude | map('regex_replace', '(.*)', '--exclude=\\1') | list }}"
+
+    - name: "copy context files"
+      template:
+        src: "{{ item }}"
+        dest: "{{ base_path }}"
+        mode: "u=rw,g=r,o=r"
+      with_items:
+        - "../docker-compose.yml"
+        - "docker-compose.override.yml"
+        - "nginx.conf"
+        - "{{ inventory_hostname }}/settings.py"
+
+    - name: "copy global nginx config"
+      template:
+        src: "global_nginx.conf"
+        dest: "{{ nginx_global_config_path }}"
+
+    - name: "run compose file"
+      docker_service:
+        project_src: "{{ base_path }}"
+        build: yes
+        pull: yes
+        restarted: yes
+      notify:
+        - "prepare django"
+        - "restart nginx"
+        - "clean docker"
+
+  handlers:
+    - name: prepare django
+      command: "docker-compose exec -T web python manage.py {{ item }}"
+      args:
+        chdir: "{{ base_path }}"
+        warn: no
+      with_items:
+        - "{{ django_prepare_commands }}"
+
+    - name: clean docker
+      command: "docker image prune -f"
+      args:
+        warn: no
+
+    - name: restart nginx
+      service: name=nginx state=restarted

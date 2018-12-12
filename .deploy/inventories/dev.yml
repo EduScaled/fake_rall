@@ -1,0 +1,8 @@
+all:
+  hosts:
+    dev:
+      ansible_host: "185.12.28.159"
+      ansible_user: "root"
+      ansible_become: true
+      base_path: "/opt/fake_rall"
+      domain: "rall.u2035dev.ru"
