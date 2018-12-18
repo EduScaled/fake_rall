@@ -1,0 +1,6 @@
+---
+django_prepare_commands: ["collectstatic --no-input", "migrate --no-input"]
+rsync_exclude: [".*", "static", "__pycache__"]
+
+nginx_sock_path: "/tmp/fake_rall.sock"
+nginx_global_config_path: "/etc/nginx/conf.d/fake_rall.conf"
