@@ -7,7 +7,7 @@ name = "pypi"
 
 [packages]
 django = "<2.2"
-djangorestframework = "<3.10"
+djangorestframework = "<3.12"
 gunicorn = "<19.10"
 pytest = "*"
 psycopg2-binary = "*"
